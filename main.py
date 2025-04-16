@@ -63,7 +63,7 @@ if uploadFile:
 
     # Dayshift output
     if dayshiftButton:
-        dateFilter = max(dataFrame['Pick Date'])
+        dateFilter = dataFrame['Pick Date'].min()
         filteredData = filterByShift('Dayshift', dateFilter)
 
         st.subheader(f"Dayshift Data (07:00 to 19:00) for {dateFilter}")
