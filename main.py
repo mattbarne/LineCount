@@ -71,8 +71,8 @@ if uploadFile:
             return shiftData
 
     # Shift selection buttons
-    dayshiftButton = st.button("Show Dayshift (07:00 to 19:00)")
-    nightshiftButton = st.button("Show Nightshift (19:00 to 07:00)")
+    dayshiftButton = st.button("Show Dayshift Lines")
+    nightshiftButton = st.button("Show Nightshift Lines")
 
     # Dayshift output
     if dayshiftButton:
@@ -102,8 +102,13 @@ if uploadFile:
         dateFilter = max(dataFrame['Pick Date'])
         filteredData = filterByShift('Nightshift', dateFilter)
 
-        shiftStartDate = (pd.to_datetime(dateFilter) - pd.Timedelta(days=1)).strftime('%m/%d/%Y')
-        st.subheader(f"Nightshift Data (19:00 {shiftStartDate} to 07:00 {dateFilter})")
+        if len(dataFrame['Pick Date'].unique()) == 1:
+            # single-day header
+            st.subheader(f"Nightshift Data (19:00 to 23:59 on {dateFilter})")
+        else:
+            # multi-day header
+            shiftStartDate = (pd.to_datetime(dateFilter) - pd.Timedelta(days=1)).strftime('%m/%d/%Y')
+            st.subheader(f"Nightshift Data (19:00 {shiftStartDate} to 07:00 {dateFilter})")
 
         if 'Picked By' in filteredData.columns:
             filteredData['Picked By'] = filteredData['Picked By'].astype(str).str.strip().str.replace('"', '')
