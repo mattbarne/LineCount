@@ -63,7 +63,7 @@ if uploadFile:
 
     # Dayshift output
     if dayshiftButton:
-        dateFilter = uniqueDates[0]
+        dateFilter = max(dataFrame['Pick Date'])
         filteredData = filterByShift('Dayshift', dateFilter)
 
         st.subheader(f"Dayshift Data (07:00 to 19:00) for {dateFilter}")
@@ -86,7 +86,7 @@ if uploadFile:
 
     # Nightshift output
     if nightshiftButton:
-        dateFilter = uniqueDates[0]
+        dateFilter = max(dataFrame['Pick Date'])
         filteredData = filterByShift('Nightshift', dateFilter)
 
         shiftStartDate = (pd.to_datetime(dateFilter) - pd.Timedelta(days=1)).strftime('%m/%d/%Y')
