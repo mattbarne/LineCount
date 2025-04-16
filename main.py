@@ -25,21 +25,19 @@ if uploadFile:
     # Get list of unique pick dates
     uniqueDates = dataFrame['Pick Date'].unique()
 
-    # Updated shift filter function
+    # Shift filter function (please work)
     def filterByShift(shift, dateFilter=None):
         if shift == 'Nightshift':
             if not dateFilter:
                 return pd.DataFrame()
 
-            # Convert the dateFilter into datetime objects
-            nightStart = pd.to_datetime(dateFilter + ' 19:00:00')
-            nextDay = (pd.to_datetime(dateFilter) + pd.Timedelta(days=1)).strftime('%m/%d/%Y')
-            nightMid = pd.to_datetime(nextDay + ' 00:00:00')
-            nightEnd = pd.to_datetime(nextDay + ' 07:00:00')
+            shiftStart = pd.to_datetime(dateFilter) - pd.Timedelta(days=1)
+            nightStart = pd.to_datetime(shiftStart.strftime('%m/%d/%Y') + ' 19:00:00')
+            nightEnd = pd.to_datetime(dateFilter + ' 07:00:00')
 
+            # Exclude lines that were already picked by the previous shift?
             shiftData = dataFrame[
-                ((dataFrame['Pick DateTime'] >= nightStart) & (dataFrame['Pick DateTime'] <= pd.to_datetime(dateFilter + ' 23:59:59'))) |
-                ((dataFrame['Pick DateTime'] >= nightMid) & (dataFrame['Pick DateTime'] < nightEnd))
+                (dataFrame['Pick DateTime'] >= nightStart) & (dataFrame['Pick DateTime'] < nightEnd)
             ]
 
             return shiftData
@@ -91,7 +89,8 @@ if uploadFile:
         dateFilter = uniqueDates[0]
         filteredData = filterByShift('Nightshift', dateFilter)
 
-        st.subheader(f"Nightshift Data (19:00 {dateFilter} to 07:00 next day)")
+        shiftStartDate = (pd.to_datetime(dateFilter) - pd.Timedelta(days=1)).strftime('%m/%d/%Y')
+        st.subheader(f"Nightshift Data (19:00 {shiftStartDate} to 07:00 {dateFilter})")
 
         if 'Picked By' in filteredData.columns:
             filteredData['Picked By'] = filteredData['Picked By'].astype(str).str.strip().str.replace('"', '')
