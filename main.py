@@ -31,30 +31,43 @@ if uploadFile:
             if not dateFilter:
                 return pd.DataFrame()
 
-            shiftStart = pd.to_datetime(dateFilter) - pd.Timedelta(days=1)
-            nightStart = pd.to_datetime(shiftStart.strftime('%m/%d/%Y') + ' 19:00:00')
-            nightEnd = pd.to_datetime(dateFilter + ' 07:00:00')
+            # single-day data
+            if len(dataFrame['Pick Date'].unique()) == 1:
+                nightStart = pd.to_datetime(dateFilter + ' 19:00:00')
+                nightEnd = pd.to_datetime(dateFilter + ' 23:59:59')
+            else:
+                # multi-day data
+                shiftStart = pd.to_datetime(dateFilter) - pd.Timedelta(days=1)
+                nightStart = pd.to_datetime(shiftStart.strftime('%m/%d/%Y') + ' 19:00:00')
+                nightEnd = pd.to_datetime(dateFilter + ' 07:00:00')
 
-            # Exclude lines that were already picked by the previous shift?
             shiftData = dataFrame[
-                (dataFrame['Pick DateTime'] >= nightStart) & (dataFrame['Pick DateTime'] < nightEnd)
+                (dataFrame['Pick DateTime'] >= nightStart) & (dataFrame['Pick DateTime'] <= nightEnd)
             ]
 
             return shiftData
 
         elif shift == 'Dayshift':
-            # 07:00 to 19:00 on the same day
             if dateFilter:
+                # single-day data
+                if len(dataFrame['Pick Date'].unique()) == 1:
+                    dayStart = pd.to_datetime(dateFilter + ' 07:00:00')
+                    dayEnd = pd.to_datetime(dateFilter + ' 19:00:00')
+                else:
+                    # multi-day data
+                    dayStart = pd.to_datetime(dateFilter + ' 07:00:00')
+                    dayEnd = pd.to_datetime(dateFilter + ' 19:00:00')
+
                 shiftData = dataFrame[
-                    (dataFrame['Pick Date'] == dateFilter) &
-                    (dataFrame['Pick DateTime'].dt.hour >= 7) &
-                    (dataFrame['Pick DateTime'].dt.hour < 19)
+                    (dataFrame['Pick DateTime'] >= dayStart) & (dataFrame['Pick DateTime'] < dayEnd)
                 ]
             else:
+                # multi-day data
                 shiftData = dataFrame[
                     (dataFrame['Pick DateTime'].dt.hour >= 7) &
                     (dataFrame['Pick DateTime'].dt.hour < 19)
                 ]
+        
             return shiftData
 
     # Shift selection buttons
